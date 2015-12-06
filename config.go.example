@@ -1,0 +1,6 @@
+package main
+
+const (
+	telegramToken  = "<TELEGRAM BOT TOKEN>"
+	emotionsAPIKey = "<EMOTIONS API KEY>"
+)
