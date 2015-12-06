@@ -2,16 +2,18 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 
 	"github.com/Syfaro/telegram-bot-api"
+	"github.com/jokuskay/ms-emotions-go"
 )
 
 func main() {
+	// create EmoAPI client
+	emo := emotions.NewClient(emotionsAPIKey)
+
+	// create Telegram bot client
 	bot, err := tgbotapi.NewBotAPI(telegramToken)
 	if err != nil {
 		log.Fatal(err)
@@ -28,7 +30,7 @@ func main() {
 
 	for update := range updates {
 		if update.Message.Photo != nil {
-			log.Println("Got photo")
+			log.Println("Photo received")
 
 			fileID := getMaxFileID(update.Message.Photo)
 			photoURL, err := bot.GetFileDirectURL(fileID)
@@ -38,31 +40,10 @@ func main() {
 				continue
 			}
 
-			jsonReq := []byte("{\"url\":\"" + photoURL + "\"}")
-
-			req, _ := http.NewRequest("POST", "https://api.projectoxford.ai/emotion/v1.0/recognize", bytes.NewBuffer(jsonReq))
-			req.Header.Add("Ocp-Apim-Subscription-Key", emotionsAPIKey)
-			req.Header.Add("Content-Type", "application/json")
-
-			client := &http.Client{}
-			resp, err := client.Do(req)
-			defer resp.Body.Close()
-
+			faces, err := emo.GetEmotions(photoURL)
 			if err != nil {
-				log.Panic(err)
-				continue
-			}
-
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Panic(err)
-				continue
-			}
-
-			var faces []Face
-			err = json.Unmarshal(body, &faces)
-			if err != nil {
-				log.Panic(err)
+				// send error
+				sendMessage(bot, update.Message.Chat.ID, update.Message.MessageID, err.Error())
 				continue
 			}
 
@@ -71,15 +52,22 @@ func main() {
 				continue
 			}
 
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, getFacesAsString(faces))
-			msg.ReplyToMessageID = update.Message.MessageID
-			bot.Send(msg)
+			// send emotions
+			sendMessage(bot, update.Message.Chat.ID, update.Message.MessageID, getFacesAsString(faces))
 
 			log.Println("Message sent")
 		}
 	}
 }
 
+// send to telegram
+func sendMessage(bot *tgbotapi.BotAPI, chatID int, messageID int, message string) {
+	msg := tgbotapi.NewMessage(chatID, message)
+	msg.ReplyToMessageID = messageID
+	bot.Send(msg)
+}
+
+// get best with quality image
 func getMaxFileID(photos []tgbotapi.PhotoSize) string {
 	result := photos[0].FileID
 	width := photos[0].Width
@@ -94,7 +82,8 @@ func getMaxFileID(photos []tgbotapi.PhotoSize) string {
 	return result
 }
 
-func getFacesAsString(faces []Face) string {
+// merge all scores to one message
+func getFacesAsString(faces []emotions.Face) string {
 	var buffer bytes.Buffer
 
 	isNeedNumeration := len(faces) > 1
@@ -103,15 +92,8 @@ func getFacesAsString(faces []Face) string {
 		if isNeedNumeration {
 			buffer.WriteString(fmt.Sprintf("\n#%d:\n", i+1))
 		}
-		buffer.WriteString(face.String())
+		buffer.WriteString(face.Scores.String())
 	}
 
 	return buffer.String()
-}
-
-func round(val float32) int {
-	if val < 0 {
-		return int(val - 0.5)
-	}
-	return int(val + 0.5)
 }
