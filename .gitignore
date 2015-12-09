@@ -1,4 +1,3 @@
 *.exe
 *.log
 /config.go
-/app.yaml
