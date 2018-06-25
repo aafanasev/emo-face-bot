@@ -1,20 +1,21 @@
-package main
+package emofacebot
 
 import (
 	"bytes"
 	"fmt"
 	"log"
+	"net/http"
 
-	"github.com/Syfaro/telegram-bot-api"
 	"github.com/jokuskay/ms-emotions-go"
+	"gopkg.in/telegram-bot-api.v4"
 )
 
 func main() {
 	// create EmoAPI client
-	emo := emotions.NewClient(emotionsAPIKey)
+	emo := emotions.NewClient("")
 
 	// create Telegram bot client
-	bot, err := tgbotapi.NewBotAPI(telegramToken)
+	bot, err := tgbotapi.NewBotAPI("")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -23,10 +24,13 @@ func main() {
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 10
+	_, err = bot.SetWebhook(tgbotapi.NewWebhookWithCert("[SITE URL]"+bot.Token, "[CERT.PEM]"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	updates, _ := bot.GetUpdatesChan(u)
+	updates, _ := bot.ListenForWebhook("/" + bot.Token)
+	go http.ListenAndServeTLS(":[PORT]", "[CERT.PEM]", "[KEY.PEM]", nil)
 
 	for update := range updates {
 		if update.Message.Photo != nil {
