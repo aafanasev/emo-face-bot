@@ -4,79 +4,88 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"net/http"
 
-	"github.com/jokuskay/ms-emotions-go"
+	"github.com/aafanasev/ms-emotions-go"
 	"gopkg.in/telegram-bot-api.v4"
 )
 
-func main() {
+var bot *tgbotapi.BotAPI
+var emo *emotions.Emo
+
+func Init(microsoftToken, telegramToken, baseUrl string, debug bool) error {
+	var err error
+
 	// create EmoAPI client
-	emo := emotions.NewClient("")
+	emo = emotions.NewClient(microsoftToken)
 
-	// create Telegram bot client
-	bot, err := tgbotapi.NewBotAPI("")
+	// create a bot
+	bot, err = tgbotapi.NewBotAPI(telegramToken)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	bot.Debug = false
+	log.Printf("[%s] connected", bot.Self.UserName)
 
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+	// debug mode
+	bot.Debug = debug
 
-	_, err = bot.SetWebhook(tgbotapi.NewWebhookWithCert("[SITE URL]"+bot.Token, "[CERT.PEM]"))
+	// set webhook
+	webhookUrl := baseUrl + bot.Token
+	_, err = bot.SetWebhook(tgbotapi.NewWebhook(webhookUrl))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	updates, _ := bot.ListenForWebhook("/" + bot.Token)
-	go http.ListenAndServeTLS(":[PORT]", "[CERT.PEM]", "[KEY.PEM]", nil)
+	log.Printf("[%s] set webhook %s", bot.Self.UserName, webhookUrl)
 
-	for update := range updates {
-		if update.Message.Photo != nil {
-			log.Println("Photo received")
+	return err
+}
 
-			fileID := getMaxFileID(update.Message.Photo)
-			photoURL, err := bot.GetFileDirectURL(fileID)
+func Handle(update *tgbotapi.Update) {
+	if update.Message.Photo != nil {
+		log.Println("Photo received")
 
-			if err != nil {
-				log.Panic(err)
-				continue
-			}
+		fileID := GetMaxFileID(update.Message.Photo)
+		photoURL, err := bot.GetFileDirectURL(fileID)
 
-			faces, err := emo.GetEmotions(photoURL)
-			if err != nil {
-				// send error
-				sendMessage(bot, update.Message.Chat.ID, update.Message.MessageID, err.Error())
-				continue
-			}
-
-			if len(faces) == 0 {
-				log.Println("No faces")
-				continue
-			}
-
-			// send emotions
-			sendMessage(bot, update.Message.Chat.ID, update.Message.MessageID, getFacesAsString(faces))
-
-			log.Println("Message sent")
+		if err != nil {
+			log.Panic(err)
+			return
 		}
+
+		faces, err := emo.GetEmotions(photoURL)
+		if err != nil {
+			// send error
+			SendMessage(update.Message.Chat.ID, update.Message.MessageID, err.Error())
+			return
+		}
+
+		if len(faces) == 0 {
+			log.Println("No faces")
+			return
+		}
+
+		// send emotions
+		SendMessage(update.Message.Chat.ID, update.Message.MessageID, GetFacesAsString(faces))
+
+		log.Println("Message sent")
 	}
 }
 
 // send to telegram
-func sendMessage(bot *tgbotapi.BotAPI, chatID int, messageID int, message string) {
+func SendMessage(chatID int64, messageID int, message string) {
 	msg := tgbotapi.NewMessage(chatID, message)
 	msg.ReplyToMessageID = messageID
 	bot.Send(msg)
 }
 
 // get best with quality image
-func getMaxFileID(photos []tgbotapi.PhotoSize) string {
-	result := photos[0].FileID
-	width := photos[0].Width
+func GetMaxFileID(photos *[]tgbotapi.PhotoSize) string {
+	firstPhoto := (*photos)[0]
+	result := firstPhoto.FileID
+	width := firstPhoto.Width
 
-	for _, photo := range photos {
+	for _, photo := range *photos {
 		if width < photo.Width && photo.Width <= 4096 {
 			result = photo.FileID
 			width = photo.Width
@@ -87,7 +96,7 @@ func getMaxFileID(photos []tgbotapi.PhotoSize) string {
 }
 
 // merge all scores to one message
-func getFacesAsString(faces []emotions.Face) string {
+func GetFacesAsString(faces []emotions.Face) string {
 	var buffer bytes.Buffer
 
 	isNeedNumeration := len(faces) > 1
