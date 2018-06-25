@@ -45,7 +45,7 @@ func Handle(update *tgbotapi.Update) {
 	if update.Message.Photo != nil {
 		log.Println("Photo received")
 
-		fileID := GetMaxFileID(update.Message.Photo)
+		fileID := getMaxFileID(update.Message.Photo)
 		photoURL, err := bot.GetFileDirectURL(fileID)
 
 		if err != nil {
@@ -56,7 +56,7 @@ func Handle(update *tgbotapi.Update) {
 		faces, err := emo.GetEmotions(photoURL)
 		if err != nil {
 			// send error
-			SendMessage(update.Message.Chat.ID, update.Message.MessageID, err.Error())
+			sendMessage(update.Message.Chat.ID, update.Message.MessageID, err.Error())
 			return
 		}
 
@@ -66,21 +66,21 @@ func Handle(update *tgbotapi.Update) {
 		}
 
 		// send emotions
-		SendMessage(update.Message.Chat.ID, update.Message.MessageID, GetFacesAsString(faces))
+		sendMessage(update.Message.Chat.ID, update.Message.MessageID, getFacesAsString(faces))
 
 		log.Println("Message sent")
 	}
 }
 
 // send to telegram
-func SendMessage(chatID int64, messageID int, message string) {
+func sendMessage(chatID int64, messageID int, message string) {
 	msg := tgbotapi.NewMessage(chatID, message)
 	msg.ReplyToMessageID = messageID
 	bot.Send(msg)
 }
 
 // get best with quality image
-func GetMaxFileID(photos *[]tgbotapi.PhotoSize) string {
+func getMaxFileID(photos *[]tgbotapi.PhotoSize) string {
 	firstPhoto := (*photos)[0]
 	result := firstPhoto.FileID
 	width := firstPhoto.Width
@@ -96,7 +96,7 @@ func GetMaxFileID(photos *[]tgbotapi.PhotoSize) string {
 }
 
 // merge all scores to one message
-func GetFacesAsString(faces []emotions.Face) string {
+func getFacesAsString(faces []emotions.Face) string {
 	var buffer bytes.Buffer
 
 	isNeedNumeration := len(faces) > 1
