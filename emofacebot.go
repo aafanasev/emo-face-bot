@@ -112,7 +112,39 @@ func getFacesAsString(faces []emotions.Face) string {
 		if isNeedNumeration {
 			buffer.WriteString(fmt.Sprintf("\n#%d:\n", i+1))
 		}
-		buffer.WriteString(face.FaceAttributes.Emotion.String())
+		buffer.WriteString(toString(&face.FaceAttributes.Emotion))
+	}
+
+	return buffer.String()
+}
+
+// Get scores as String
+func toString(emotion *emotions.Emotion) string {
+	var buffer bytes.Buffer
+
+	if emotion.Anger > 0 {
+		buffer.WriteString(fmt.Sprintf("Anger: %.2f%%\n", emotion.Anger))
+	}
+	if emotion.Contempt > 0 {
+		buffer.WriteString(fmt.Sprintf("Contempt: %.2f%%\n", emotion.Contempt))
+	}
+	if emotion.Disgust > 0 {
+		buffer.WriteString(fmt.Sprintf("Disgust: %.2f%%\n", emotion.Disgust))
+	}
+	if emotion.Fear > 0 {
+		buffer.WriteString(fmt.Sprintf("Fear: %.2f%%\n", emotion.Fear))
+	}
+	if emotion.Happiness > 0 {
+		buffer.WriteString(fmt.Sprintf("Happiness: %.2f%%\n", emotion.Happiness))
+	}
+	if emotion.Neutral > 0 {
+		buffer.WriteString(fmt.Sprintf("Neutral: %.2f%%\n", emotion.Neutral))
+	}
+	if emotion.Sadness > 0 {
+		buffer.WriteString(fmt.Sprintf("Sadness: %.2f%%\n", emotion.Sadness))
+	}
+	if emotion.Surprise > 0 {
+		buffer.WriteString(fmt.Sprintf("Surprise: %.2f%%\n", emotion.Surprise))
 	}
 
 	return buffer.String()
