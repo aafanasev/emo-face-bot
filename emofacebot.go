@@ -66,7 +66,14 @@ func Handle(update *tgbotapi.Update) {
 		}
 
 		// send emotions
-		sendMessage(update.Message.Chat.ID, update.Message.MessageID, getFacesAsString(faces))
+		text := getFacesAsString(faces)
+
+		if bot.Debug {
+			log.Println("--- Debug info: message text ---")
+			log.Println(text)
+		}
+
+		sendMessage(update.Message.Chat.ID, update.Message.MessageID, text)
 
 		log.Println("Message sent")
 	}
