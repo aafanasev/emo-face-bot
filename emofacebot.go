@@ -105,7 +105,7 @@ func getFacesAsString(faces []emotions.Face) string {
 		if isNeedNumeration {
 			buffer.WriteString(fmt.Sprintf("\n#%d:\n", i+1))
 		}
-		buffer.WriteString(face.Scores.String())
+		buffer.WriteString(face.FaceAttributes.Emotion.String())
 	}
 
 	return buffer.String()
