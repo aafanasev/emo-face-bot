@@ -113,13 +113,12 @@ func getFacesAsString(faces []emotions.Face) string {
 	return buffer.String()
 }
 
-// Get scores as String
 func toString(emotion *emotions.Emotion) string {
 	var buffer bytes.Buffer
 
 	if bot.Debug {
 		log.Println("--- Debug info: message text ---")
-		log.Println(emotion)
+		fmt.Printf("%+v\n", emotion)
 	}
 
 	if emotion.Anger > 0 {
