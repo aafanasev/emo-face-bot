@@ -68,11 +68,6 @@ func Handle(update *tgbotapi.Update) {
 		// send emotions
 		text := getFacesAsString(faces)
 
-		if bot.Debug {
-			log.Println("--- Debug info: message text ---")
-			log.Println(text)
-		}
-
 		sendMessage(update.Message.Chat.ID, update.Message.MessageID, text)
 
 		log.Println("Message sent")
@@ -121,6 +116,11 @@ func getFacesAsString(faces []emotions.Face) string {
 // Get scores as String
 func toString(emotion *emotions.Emotion) string {
 	var buffer bytes.Buffer
+
+	if bot.Debug {
+		log.Println("--- Debug info: message text ---")
+		log.Println(emotion)
+	}
 
 	if emotion.Anger > 0 {
 		buffer.WriteString(fmt.Sprintf("Anger: %.2f%%\n", emotion.Anger))
