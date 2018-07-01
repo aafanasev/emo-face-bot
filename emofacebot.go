@@ -117,28 +117,28 @@ func toString(emotion *emotions.Emotion) string {
 	var buffer bytes.Buffer
 
 	if emotion.Anger > 0 {
-		buffer.WriteString(fmt.Sprintf("Anger: %.2f%%\n", emotion.Anger))
+		buffer.WriteString(fmt.Sprintf("Anger: %.0f%%\n", emotion.Anger))
 	}
 	if emotion.Contempt > 0 {
-		buffer.WriteString(fmt.Sprintf("Contempt: %.2f%%\n", emotion.Contempt))
+		buffer.WriteString(fmt.Sprintf("Contempt: %.0f%%\n", emotion.Contempt))
 	}
 	if emotion.Disgust > 0 {
-		buffer.WriteString(fmt.Sprintf("Disgust: %.2f%%\n", emotion.Disgust))
+		buffer.WriteString(fmt.Sprintf("Disgust: %.0f%%\n", emotion.Disgust))
 	}
 	if emotion.Fear > 0 {
-		buffer.WriteString(fmt.Sprintf("Fear: %.2f%%\n", emotion.Fear))
+		buffer.WriteString(fmt.Sprintf("Fear: %.0f%%\n", emotion.Fear))
 	}
 	if emotion.Happiness > 0 {
-		buffer.WriteString(fmt.Sprintf("Happiness: %.2f%%\n", emotion.Happiness))
+		buffer.WriteString(fmt.Sprintf("Happiness: %.0f%%\n", emotion.Happiness))
 	}
 	if emotion.Neutral > 0 {
-		buffer.WriteString(fmt.Sprintf("Neutral: %.2f%%\n", emotion.Neutral))
+		buffer.WriteString(fmt.Sprintf("Neutral: %.0f%%\n", emotion.Neutral))
 	}
 	if emotion.Sadness > 0 {
-		buffer.WriteString(fmt.Sprintf("Sadness: %.2f%%\n", emotion.Sadness))
+		buffer.WriteString(fmt.Sprintf("Sadness: %.0f%%\n", emotion.Sadness))
 	}
 	if emotion.Surprise > 0 {
-		buffer.WriteString(fmt.Sprintf("Surprise: %.2f%%\n", emotion.Surprise))
+		buffer.WriteString(fmt.Sprintf("Surprise: %.0f%%\n", emotion.Surprise))
 	}
 
 	return buffer.String()
