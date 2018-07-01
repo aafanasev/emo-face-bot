@@ -116,11 +116,6 @@ func getFacesAsString(faces []emotions.Face) string {
 func toString(emotion *emotions.Emotion) string {
 	var buffer bytes.Buffer
 
-	if bot.Debug {
-		log.Println("--- Debug info: message text ---")
-		fmt.Printf("%+v\n", emotion)
-	}
-
 	if emotion.Anger > 0 {
 		buffer.WriteString(fmt.Sprintf("Anger: %.2f%%\n", emotion.Anger))
 	}

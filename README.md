@@ -4,8 +4,8 @@ Telegram bot to recognize emotions using "Emotions API" by Microsoft
 
 ## Library
 
-https://github.com/jokuskay/ms-emotions-go
+https://github.com/aafanasev/ms-emotions-go
 
 ## Install
 
-https://telegram.me/EmoFaceBot
+https://t.me/EmoFaceBot
